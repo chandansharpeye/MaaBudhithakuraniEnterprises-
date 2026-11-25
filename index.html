@@ -379,6 +379,12 @@ pages.cart = () => {
    <div class="panel"><table><thead><tr><th>Product</th><th>Qty</th><th class="right">Amount</th><th></th></tr></thead><tbody>${rows}</tbody></table>
     <p style="margin-top:12px"><a href="#/products">Continue shopping</a> &nbsp;|&nbsp; <button type="button" onclick="clearCart()" style="background:none;border:0;color:#B42318;font:600 14px Inter,sans-serif;cursor:pointer;padding:0">Clear enquiry list</button></p></div>
    <div class="panel" style="margin-top:16px"><h3 style="margin-top:0;color:var(--navy)">Your details</h3>${enquiryForm()}</div>
+   <div class="panel" style="margin-top:16px"><h3 style="margin-top:0;color:var(--navy)">UPI payment QR</h3>
+    <p class="meta">UPI ID: <strong>7978137724@upi</strong><br>Payee: Master Swadhin Kumar Sahu</p>
+    <img src="upi-qr.jpg" alt="UPI QR code for Maa Budhi Thakurani Enterprises" style="width:min(100%,280px);height:auto;margin:12px auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff">
+    <p class="meta">Please do not pay before the owner confirms product availability and the final amount. Payment is verified manually by the owner.</p>
+    <a class="btn btn-dark" href="upi://pay?pa=7978137724@upi&amp;pn=Master%20Swadhin%20Kumar%20Sahu" style="text-align:center">Open UPI app</a>
+   </div>
   </div>
   <aside class="panel sum">
    <div><span>Product subtotal</span><span>${inr(sub)}</span></div>
@@ -406,9 +412,9 @@ function enquiryForm(){
   <div class="full"><label for="f_msg">Additional message</label><textarea id="f_msg" maxlength="400"></textarea></div>
  </div>
  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-  <button class="btn btn-wa" type="submit">Send enquiry on WhatsApp</button>
+  <button class="btn btn-wa" type="submit">Generate quotation &amp; continue</button>
  </div>
- <p class="meta" style="margin-top:10px">Sending opens WhatsApp with your list pre-filled. Your enquiry is not an order until the business confirms it.</p>
+ <p class="meta" style="margin-top:10px">This creates your quotation and prepares an order request for the owner. Your order is not accepted until the owner confirms it on WhatsApp.</p>
 </form>`;
 }
 
@@ -416,16 +422,35 @@ function quotationPage(items, ref, customer, payment){
  const subtotal = items.reduce((n,i)=>n + (i.p.price * i.q),0);
  const date = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
  const rows = items.map(i=>`<tr><td>${esc(i.p.name)}<div class="meta">SKU: ${esc(i.p.sku)}</div></td><td>${i.q}</td><td>${inr(i.p.price)}</td><td>${inr(i.p.price*i.q)}</td></tr>`).join("");
- const msg = waMsg(items,ref) + `\nCustomer: ${customer.name}\nMobile: ${customer.mobile}\nCustomer type: ${customer.type}\nPayment preference: ${payment}\nState: ${customer.state}\nCity: ${customer.city}\nPIN: ${customer.pin}\nAddress: ${customer.address}\n\nQuotation subtotal shown on website: ${inr(subtotal)} (GST and delivery not included; owner to confirm).`;
+ const msg = "NEW ORDER REQUEST / OWNER DISPATCH LIST\\n\\n" + waMsg(items,ref) + `\nCustomer: ${customer.name}\nMobile: ${customer.mobile}\nCustomer type: ${customer.type}\nPayment preference: ${payment}\nState: ${customer.state}\nCity: ${customer.city}\nPIN: ${customer.pin}\nAddress: ${customer.address}\nCustomer note: ${customer.message || "-"}\n\nQuotation subtotal: ${inr(subtotal)} (GST and delivery not included; owner to confirm).\n\nOWNER UPDATE REQUIRED: Confirm availability and final amount, then send order confirmation, dispatch date, departure date and expected delivery date to the customer on WhatsApp.`;
  return `<section class="page wrap"><div class="quote-paper" id="quotationPaper">
-  <div class="quote-head"><div><h2 style="margin:0;color:#10233f">Maa Budhi Thakurani Enterprises</h2><div>Brahmapur, Odisha, India</div><div>Phone / WhatsApp: 7978137724</div></div><div style="text-align:right"><h2 style="margin:0;color:#e87524">QUOTATION</h2><strong>Reference: ${esc(ref)}</strong><div>Date: ${esc(date)}</div><div>Status: Awaiting owner confirmation</div></div></div>
+  <div class="quote-head"><div><h2 style="margin:0;color:#10233f">Maa Budhi Thakurani Enterprises</h2><div>Brahmapur, Odisha, India</div><div>Phone / WhatsApp: 7978137724</div></div><div style="text-align:right"><h2 style="margin:0;color:#e87524">QUOTATION</h2><strong>Reference: ${esc(ref)}</strong><div>Date: ${esc(date)}</div><div>Status: Order request — awaiting owner confirmation</div></div></div>
   <h3>Customer details</h3><p><strong>${esc(customer.name)}</strong><br>${esc(customer.mobile)}${customer.email?`<br>${esc(customer.email)}`:""}<br>${esc(customer.address)}, ${esc(customer.city)}, ${esc(customer.state)} - ${esc(customer.pin)}</p>
   <p><strong>Customer type:</strong> ${esc(customer.type)} &nbsp; <strong>Payment preference:</strong> ${esc(payment)}</p>
   <table class="quote-table"><thead><tr><th>Product</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
   <div style="max-width:340px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0"><strong>Product subtotal</strong><strong>${inr(subtotal)}</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>GST</span><span>To be confirmed</span></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>Delivery charges</span><span>To be confirmed</span></div><div style="display:flex;justify-content:space-between;border-top:2px solid #10233f;padding:12px 0;font-size:18px"><strong>Estimated subtotal</strong><strong>${inr(subtotal)}</strong></div></div>
-  <div class="quote-note"><strong>Important:</strong> This is an enquiry quotation only, not a tax invoice or confirmed order. Listed product prices and availability require owner confirmation. GST and delivery charges are not included. Final payable amount and payment instructions will be shared by the business on WhatsApp. Do not make a UPI payment until the owner confirms the order and provides verified payment details.</div>
+  <div class="quote-note"><strong>Important:</strong> This is a quotation / order request, NOT a tax invoice and NOT an accepted order. Product availability, GST and delivery charges must be confirmed by the owner. Do not pay until the owner confirms the final amount. UPI payments are checked manually.</div>
+  <div style="margin-top:16px;padding:14px;border:1px solid #DDE2EA;border-radius:10px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+   <div style="flex:1;min-width:180px"><strong>UPI payment (after owner confirmation)</strong><p style="margin:6px 0">UPI ID: <strong>7978137724@upi</strong><br>Payee: Master Swadhin Kumar Sahu</p><a href="upi://pay?pa=7978137724@upi&amp;pn=Master%20Swadhin%20Kumar%20Sahu" class="btn btn-dark">Open UPI app</a></div>
+   <img src="upi-qr.jpg" alt="UPI QR code" style="width:160px;height:160px;object-fit:contain;border:1px solid #DDE2EA;border-radius:8px;padding:5px">
+  </div>
   <p style="margin-top:18px">Thank you for choosing Maa Budhi Thakurani Enterprises.</p>
- </div><div class="quote-actions"><button class="btn btn-dark" type="button" onclick="window.print()">Download / Print quotation (Save as PDF)</button><a class="btn btn-wa" href="${esc(waLink(msg))}" target="_blank" rel="noopener">Continue on WhatsApp</a><a class="btn" href="#/products">Continue shopping</a></div><p class="meta">On the print screen, choose “Save as PDF” to keep a PDF copy. Then send your quotation reference to the owner on WhatsApp.</p></section>`;
+ </div><div class="quote-actions">
+ <button class="btn btn-dark" type="button" onclick="window.print()">Download quotation PDF</button>
+ <a class="btn btn-wa" href="${esc(waLink(msg))}" target="_blank" rel="noopener">Send order request to owner</a>
+ <button class="btn" type="button" onclick="shareQuotation('${esc(ref)}')">Share quotation on WhatsApp</button>
+ <a class="btn" href="#/products">Continue shopping</a></div>
+ <p class="meta">The owner receives the order request and customer details in WhatsApp. The owner then confirms the order and manually sends dispatch date, departure date and expected delivery date to the customer on WhatsApp. To share the PDF, choose Download quotation PDF, save it, then attach it in WhatsApp.</p></section>`;
+}
+
+async function shareQuotation(ref){
+ const text = "Maa Budhi Thakurani Enterprises\\nQuotation reference: "+ref+"\\nUPI ID: 7978137724@upi\\nThis is a quotation/order request, not a tax invoice or confirmed order. Please contact the owner on WhatsApp for confirmation.";
+ if(navigator.share){
+  try { await navigator.share({title:"Quotation "+ref,text}); return; }
+  catch(e){ if(e && e.name==="AbortError") return; }
+ }
+ try { await navigator.clipboard.writeText(text); toast("Quotation details copied. Open WhatsApp and paste them."); }
+ catch(e){ window.open(waLink(text),"_blank","noopener"); }
 }
 
 function waMsg(items, ref){
